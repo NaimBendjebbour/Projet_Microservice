@@ -13,11 +13,13 @@ Construction du conteneur :
 à la racine de chaque projet exécutez :
 
 >docker build -f Dockerfile -t serviceoperation .
+
 >docker build -f Dockerfile -t servicecompte .
 
 Lancement du conteneur :
 
 >docker run -p 8010:8010 serviceoperation
+
 >docker run -p 8011:8011 servicecompte
 
 Mapping service Compte et Operation : 

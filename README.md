@@ -20,18 +20,28 @@ Lancement du conteneur :
 docker run -p 8010:8010 serviceoperation
 docker run -p 8011:8011 servicecompte
 
-Mapping service rest : 
+##Mapping service Compte et Operation : 
 
 METHODE	URL	DESCRIPTION
+
 GET	/compte/{id}	Récupérer un compte
+
 GET	/compte/all	Récupérer liste des compte
+
 POST	/compte/add	Ajouter un compte
+
 Put	/compte/update/{id}	Mise à jour du compte
+
 Delete	/compte/delete/{id}	Supprimer un compte
 
-METHODE	URL	DESCRIPTION
+
+
 GET	/operation/{id}	Récupérer une operation
+
 GET	/operation/all	Récupérer liste des operations
+
 POST	/operation/add	Ajouter une operation
+
 Put	/operation/update/{id}	Mise à jour d’une operation
+
 Delete	/operation/delete/{id}	Supprimer une operation

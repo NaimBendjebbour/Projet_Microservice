@@ -16,14 +16,16 @@ public class Compte implements Serializable {
     private Long id;
     private String iban;
     private String type;
+    private float solde;
     private float interet;
     private String frais_tenu_compte;
 
     public Compte(){}
 
-    public Compte(String iban, String type, float interet, String frais_tenu_compte) {
+    public Compte(String iban, String type,float solde ,float interet, String frais_tenu_compte) {
         this.iban = iban;
         this.type = type;
+        this.solde=solde;
         this.interet = interet;
         this.frais_tenu_compte = frais_tenu_compte;
     }

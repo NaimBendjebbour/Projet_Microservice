@@ -4,10 +4,12 @@ import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbo
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OperationRepository extends JpaRepository<Operation,Long> {
 
-    List<Operation> findAll();
 
+    List<Optional<Operation>> findAllByIbandestination(String ibanDestination);
+    List<Optional<Operation>> findAllByIbanSource(String ibanDestination);
 
 }

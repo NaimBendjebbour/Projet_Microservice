@@ -1,14 +1,20 @@
 package fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Controller;
 
 import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Contrat.OperationRepository;
+import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Entity.Compte;
 import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Entity.Operation;
+import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Exception.CompteNotFoundException;
+import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Exception.InsufficientFundsException;
 import fr.naimbendjebbour.dauphine.microservice.microserviceProjet.naimbendjebbour.Exception.OperationNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -42,6 +48,7 @@ public class OperationController {
                 linkTo(methodOn(OperationController.class).getAllOperations()).withSelfRel());
     }
 
+
     @GetMapping("/operation/{id}")
     public Resource<Operation> getOperationById(@PathVariable Long id) {
 
@@ -55,7 +62,42 @@ public class OperationController {
     @PostMapping("/operation/add")
     public ResponseEntity<Void> newCompte(@RequestBody Operation operation) {
 
+        RestTemplate restTemplate = new RestTemplate();
+
+        // récuperation du compte source
+        ResponseEntity<Compte> response = restTemplate.exchange(
+                "http://192.168.99.100:8011/compte/byIban/"+operation.getIbanSource(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<Compte>(){});
+        Compte compteSource = response.getBody();
+
+        // recuperation du compte destination
+        ResponseEntity<Compte> response2 = restTemplate.exchange(
+                "http://192.168.99.100:8011/compte/byIban/"+operation.getIbandestination(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<Compte>(){});
+        Compte compteDestination = response2.getBody();
+
+        // verification que les comptes existent
+        if (compteSource == null || compteDestination == null)
+            throw new CompteNotFoundException(compteSource.getIban());
+
+
+        //verification du solde
+        if(compteSource.getSolde() < operation.getMontant())
+            throw new InsufficientFundsException(operation.getIbanSource());
+
+        // a mettre dans un transaction
+        // sauvegarde de l'operation
         Operation ope = repository.save(operation);
+
+        //upgrade du montant du
+        compteSource.setSolde(compteSource.getSolde() - operation.getMontant());
+        compteDestination.setSolde(compteDestination.getSolde() + operation.getMontant());
+        restTemplate.put("http://192.168.99.100:8011/compte/update/"+compteSource.getId(), compteSource);
+        restTemplate.put("http://192.168.99.100:8011/compte/update/"+compteDestination.getId(), compteDestination);
 
         if(ope == null){
             return ResponseEntity.noContent().build();
